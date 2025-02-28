@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
-    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="./images/icons/hacker (1).png" type="image/x-icon">
@@ -9,5 +9,214 @@
 </head>
 <body>
     <h1 class="text-center m-4 text-primary">Hello World!</h1>
+
+    <script>
+
+        console.log(window.outerHeight);
+         // posluchač událostí
+        document.addEventListener("keydown", keyPush);
+
+        // plátno
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext("2d");
+        const skore = document.getElementById("skore");
+
+        const up = document.getElementById("up");
+        const left = document.getElementById("left");
+        const right = document.getElementById("right");
+        const down = document.getElementById("down");
+
+        // hra
+        let gameIsRunning = true;
+
+        // hadík
+        const snakeSize = 30;
+        let snakeSpeed = snakeSize;
+        let snakePosX = 0;
+        let snakePoxY = canvas.height/2;
+
+        let velocityX = 1;
+        let velocityY = 0;
+
+        let tail = []
+        let snakeLength = 2;
+
+        // žrádlo
+        let foodPosX = 0;
+        let foodPosy = 0;
+
+        // počet dlaždic hracího pole
+        const tileCountX = canvas.width / snakeSize;
+        const tileCountY = canvas.height / snakeSize;
+
+        // rychlost hry
+        const fps = 15;
+
+        let score = 0;
+
+        // běh
+        function run() {   
+            if (gameIsRunning) {
+                drawStuff();
+                moveStuff();
+                setTimeout(run, 1000 / fps);     
+            }       
+        }
+
+        setFood();
+        run();
+
+        // pohyb hadíka
+        function moveStuff() {
+            snakePosX += snakeSpeed * velocityX;
+            snakePoxY += snakeSpeed * velocityY;
+
+            // kolize se stěnou
+            if (snakePosX > canvas.width - snakeSize) {
+                snakePosX = 0;
+            }           
+            if (snakePosX < 0) {
+            snakePosX = canvas.width;
+            }  
+            if (snakePoxY > canvas.height - snakeSize) {
+                snakePoxY = 0;
+            }           
+            if (snakePoxY < 0) {
+                snakePoxY = canvas.height;
+            }
+            
+            // kolize s hadíkem
+            tail.forEach((snakePart) => {
+                if (snakePosX === snakePart.x && snakePoxY === snakePart.y) {
+                    alert("GAME OVER!");
+                    gameIsRunning = false;
+                }
+            })
+
+            // růst chvostíku
+            tail.push({ x: snakePosX, y: snakePoxY});
+
+            //
+            tail = tail.slice(-1 * snakeLength);
+            
+            // kolize se žrádlem
+            if (snakePosX === foodPosX && snakePoxY === foodPosy) {
+                // alert("ňam ňam");
+                skore.textContent = ++score;
+                snakeLength++;
+                setFood();
+            }
+        }
+
+        // vykreslení hry
+        function drawStuff() {     
+            // pozadí
+            rectangle("#0f5132", 0, 0, canvas.width, canvas.height);
+                
+            // mřížka
+            drawGrid();
+
+            // chvostík
+            tail.forEach(snakePart => {
+                rectangle("#664d03", snakePart.x, snakePart.y, snakeSize, snakeSize);
+            })
+
+            // hadík
+            rectangle("#3b2d01", snakePosX, snakePoxY, snakeSize, snakeSize)     
+
+            // žrádlo
+            rectangle("#dc3545", foodPosX, foodPosy, snakeSize, snakeSize);
+
+        }
+
+        // vykreslení mřížky
+        function drawGrid() {
+        for (let i = 0; i < canvas.width / snakeSize; i++) { 
+            for (let j = 0; j < canvas.width / snakeSize; j++) {
+                rectangle("#198754", snakeSize * i, snakeSize * j, snakeSize - 1, snakeSize - 1);
+            }
+        }
+        }
+
+        // nastavení žrádla
+        function setFood() {
+        foodPosX = Math.floor(Math.random() * tileCountX) * snakeSize;
+        foodPosy = Math.floor(Math.random() * tileCountY)* snakeSize;
+        }
+
+        // malování čtverce
+        function rectangle(color, x, y, width, height, radii) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, width, height, radii);
+        }
+
+        // malování jablíčka (nefunkční)
+        function apple(color, x, y, width, height, radii) {
+        ctx.fillStyle = color;
+        ctx.roundRect(x, y, width, height, radii);
+        }
+
+        // klávesnice
+        function keyPush(event) {
+            switch(event.key) {
+                case 'ArrowUp':
+                if (velocityY !== 1) {
+                    velocityX = 0;
+                    velocityY = -1;
+                }
+                break;
+                case 'ArrowDown':
+                if (velocityY !== -1) {
+                    velocityX = 0;
+                    velocityY = 1;
+                }
+                break;
+                case 'ArrowLeft':
+                if (velocityX !== 1) {
+                    velocityX = -1;
+                    velocityY = 0;
+                }
+                break;
+                case 'ArrowRight':
+                if (velocityX !== -1) {
+                    velocityX = 1;
+                    velocityY = 0;
+                }
+                break;
+            }
+        }
+
+        
+
+        up.onclick = () => {
+            if (velocityY !== 1) {
+                    velocityX = 0;
+                    velocityY = -1;
+                }
+        };
+
+        left.onclick = () => {
+            if (velocityX !== 1) {
+                    velocityX = -1;
+                    velocityY = 0;
+                }
+        }
+
+        right.onclick = () => {
+            if (velocityX !== -1) {
+                    velocityX = 1;
+                    velocityY = 0;
+                }
+        }
+
+        down.onclick = () => {
+            if (velocityY !== -1) {
+                    velocityX = 0;
+                    velocityY = 1;
+                }
+        }
+
+
+    </script>
 </body>
 </html>
